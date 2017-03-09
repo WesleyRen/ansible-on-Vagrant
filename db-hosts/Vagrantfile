@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-CLUSTER_SIZE = 2
+CLUSTER_SIZE = 3
 
 $install_pub_key= <<SCRIPT
 cnt=`grep 'for Ansible' ~vagrant/.ssh/authorized_keys | wc -l`

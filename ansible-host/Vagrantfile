@@ -8,11 +8,22 @@ $install_priv_key= <<SCRIPT
 
 SCRIPT
 
-$disable_known_hosts= <<SCRIPT
-cp -p /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.$(date "+%Y.%m.%d-%H.%M.%S")
+$config_ansible= <<SCRIPT
+ts=$(date "+%Y.%m.%d-%H.%M.%S")
+cp -p /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.$ts
+sudo cp -p /etc/ansible/hosts  /etc/ansible/hosts.$ts
+
+# disable known host check:
 perl -pi -e "s/#host_key_checking = False/host_key_checking = False/g;" /etc/ansible/ansible.cfg
+
+# config private key:
 perl -pi -e "s|#private_key_file = /path/to/file|private_key_file = ~vagrant/.ssh/id_rsa.ansible|g;" /etc/ansible/ansible.cfg
 
+# config ansible inventory:
+sudo echo "192.168.47.21
+192.168.47.22
+192.168.47.23" | sudo tee -a /etc/ansible/hosts
+# or (sudo sh -c 'echo "text" >>/file.txt')
 
 SCRIPT
 
@@ -20,15 +31,24 @@ $install_ansible = <<SCRIPT
 yes| sudo yum update
 yes| sudo yum -y install epel-release
 yes| sudo yum -y install ansible
+yes| sudo yum -y install unzip
+yes| sudo yum install git
 
+SCRIPT
+
+$do_galera = <<SCRIPT
+cd ~vagrant; chmod 755 do_galera.sh
+./do_galera.sh
 SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.provision "file", source: "../etc/id_rsa.ansible", destination: "~vagrant/.ssh/id_rsa.ansible"
+  config.vm.provision "file", source: "../etc/do_galera.sh", destination: "~vagrant/do_galera.sh"
   config.vm.provision 'shell', inline: $install_priv_key
-  config.vm.provision 'shell', inline: $disable_known_hosts
   config.vm.provision 'shell', inline: $install_ansible
+  config.vm.provision 'shell', inline: $config_ansible
+  config.vm.provision 'shell', inline: $do_galera
 
   # set up Ansible on a separated box(s):
   (1..ANSIBLE_SIZE).each do |box_id|
