@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+CLUSTER_SIZE = 2
+
+$install_pub_key= <<SCRIPT
+cnt=`grep 'for Ansible' ~vagrant/.ssh/authorized_keys | wc -l`
+if [ $cnt -eq 0 ]; then 
+   cat ~vagrant/id_rsa.ansible.pub  >> ~vagrant/.ssh/authorized_keys
+fi
+
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  config.vm.provision "file", source: "../etc/id_rsa.ansible.pub", destination: "~vagrant/id_rsa.ansible.pub"
+  config.vm.provision 'shell', inline: $install_pub_key
+
+  (1..CLUSTER_SIZE).each do |box_id|
+    config.vm.define "galera-db-#{box_id}" do |box|
+      config.vm.provider "virtualbox" do |v|
+        v.name = "galera-db-#{box_id}"
+      end
+      box.vm.hostname = "galera-db-#{box_id}"
+      box.vm.network "private_network", ip: "192.168.47.#{20+box_id}"
+      config.vm.network "forwarded_port", guest: 3306, host: 3306,
+        auto_correct: true
+
+    end
+  end
+
+end

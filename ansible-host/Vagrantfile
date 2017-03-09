@@ -1,0 +1,29 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+ANSIBLE_SIZE = 1
+
+$install_ansible = <<SCRIPT
+yes| sudo yum update
+yes| sudo yum -y install epel-release
+yes| sudo yum -y install ansible
+
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "centos/7"
+  config.vm.provision "file", source: "../etc/id_rsa.ansible", destination: "~vagrant/.ssh/id_rsa.ansible"
+  config.vm.provision 'shell', inline: $install_ansible
+
+  # set up Ansible on a separated box(s):
+  (1..ANSIBLE_SIZE).each do |box_id|
+    config.vm.define "ansible-#{box_id}" do |box|
+      config.vm.provider "virtualbox" do |v|
+        v.name = "ansible-#{box_id}"
+      end
+      box.vm.hostname = "ansible-#{box_id}"
+      box.vm.network "private_network", ip: "192.168.47.#{50+box_id}"
+  
+    end
+  end
+end
