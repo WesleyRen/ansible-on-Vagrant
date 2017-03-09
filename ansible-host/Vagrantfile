@@ -8,6 +8,14 @@ $install_priv_key= <<SCRIPT
 
 SCRIPT
 
+$disable_known_hosts= <<SCRIPT
+cp -p /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.$(date "+%Y.%m.%d-%H.%M.%S")
+perl -pi -e "s/#host_key_checking = False/host_key_checking = False/g;" /etc/ansible/ansible.cfg
+perl -pi -e "s|#private_key_file = /path/to/file|private_key_file = ~vagrant/.ssh/id_rsa.ansible|g;" /etc/ansible/ansible.cfg
+
+
+SCRIPT
+
 $install_ansible = <<SCRIPT
 yes| sudo yum update
 yes| sudo yum -y install epel-release
@@ -19,6 +27,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.provision "file", source: "../etc/id_rsa.ansible", destination: "~vagrant/.ssh/id_rsa.ansible"
   config.vm.provision 'shell', inline: $install_priv_key
+  config.vm.provision 'shell', inline: $disable_known_hosts
   config.vm.provision 'shell', inline: $install_ansible
 
   # set up Ansible on a separated box(s):
