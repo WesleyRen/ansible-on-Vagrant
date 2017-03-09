@@ -3,6 +3,11 @@
 
 ANSIBLE_SIZE = 1
 
+$install_priv_key= <<SCRIPT
+   chmod 600 ~vagrant/.ssh/authorized_keys
+
+SCRIPT
+
 $install_ansible = <<SCRIPT
 yes| sudo yum update
 yes| sudo yum -y install epel-release
@@ -13,6 +18,7 @@ SCRIPT
 Vagrant.configure("2") do |config|
   config.vm.box = "centos/7"
   config.vm.provision "file", source: "../etc/id_rsa.ansible", destination: "~vagrant/.ssh/id_rsa.ansible"
+  config.vm.provision 'shell', inline: $install_priv_key
   config.vm.provision 'shell', inline: $install_ansible
 
   # set up Ansible on a separated box(s):
