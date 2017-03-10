@@ -7,13 +7,16 @@ fact_caching = jsonfile
 fact_caching_connection = ~/.ansible/cache
 " >> /etc/ansible/ansible.cfg'
 
-git clone https://github.com/adfinis-sygroup/mariadb-ansible-galera-cluster
+playbook_dir=mariadb-ansible-galera-cluster
+ts=$(date "+%Y.%m.%d-%H.%M.%S")
+[ -d $playbook_dir ] && mv $playbook_dir $playbook_dir.$ts
+git clone https://github.com/adfinis-sygroup/$playbook_dir
 
-cd mariadb-ansible-galera-cluster
+cd $playbook_dir
 echo "[galera_cluster]
-192.168.47.21 ansible_user=vagrant ansible_become=true
-192.168.47.22 ansible_user=vagrant ansible_become=true
-192.168.47.23 ansible_user=vagrant ansible_become=true
+galera-db-1 ansible_host=192.168.47.21 ansible_user=vagrant ansible_become=true
+galera-db-2 ansible_host=192.168.47.22 ansible_user=vagrant ansible_become=true
+galera-db-3 ansible_host=192.168.47.23 ansible_user=vagrant ansible_become=true
 " > galera.hosts
 
 ansible-playbook -i galera.hosts galera.yml --tags setup

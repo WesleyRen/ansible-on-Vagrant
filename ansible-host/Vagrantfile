@@ -27,12 +27,19 @@ sudo echo "192.168.47.21
 
 SCRIPT
 
-$install_ansible = <<SCRIPT
+$install_tools = <<SCRIPT
 yes| sudo yum update
-yes| sudo yum -y install epel-release
-yes| sudo yum -y install ansible
-yes| sudo yum -y install unzip
-yes| sudo yum install git
+yum list installed epel-release; ret=$? # return 0 if installed, 1 if not.
+[ $ret -eq 0 ] || yes| sudo yum -y install epel-release
+
+yum list installed ansible; ret=$? # return 0 if installed, 1 if not.
+[ $ret -eq 0 ] || yes| sudo yum -y install ansible
+
+yum list installed unzip; ret=$? # return 0 if installed, 1 if not.
+[ $ret -eq 0 ] || yes| sudo yum -y install unzip
+
+yum list installed git; ret=$? # return 0 if installed, 1 if not.
+[ $ret -eq 0 ] || yes| sudo yum install git
 
 SCRIPT
 
@@ -46,7 +53,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "../etc/id_rsa.ansible", destination: "~vagrant/.ssh/id_rsa.ansible"
   config.vm.provision "file", source: "../etc/do_galera.sh", destination: "~vagrant/do_galera.sh"
   config.vm.provision 'shell', inline: $install_priv_key
-  config.vm.provision 'shell', inline: $install_ansible
+  config.vm.provision 'shell', inline: $install_tools
   config.vm.provision 'shell', inline: $config_ansible
   config.vm.provision 'shell', inline: $do_galera
 
