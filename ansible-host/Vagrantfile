@@ -10,14 +10,14 @@ SCRIPT
 
 $config_ansible= <<SCRIPT
 ts=$(date "+%Y.%m.%d-%H.%M.%S")
-cp -p /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.$ts
+sudo cp -p /etc/ansible/ansible.cfg /etc/ansible/ansible.cfg.$ts
 sudo cp -p /etc/ansible/hosts  /etc/ansible/hosts.$ts
 
 # disable known host check:
-perl -pi -e "s/#host_key_checking = False/host_key_checking = False/g;" /etc/ansible/ansible.cfg
+sudo perl -pi -e "s/#host_key_checking = False/host_key_checking = False/g;" /etc/ansible/ansible.cfg
 
 # config private key:
-perl -pi -e "s|#private_key_file = /path/to/file|private_key_file = ~vagrant/.ssh/id_rsa.ansible|g;" /etc/ansible/ansible.cfg
+sudo perl -pi -e "s|#private_key_file = /path/to/file|private_key_file = ~vagrant/.ssh/id_rsa.ansible|g;" /etc/ansible/ansible.cfg
 
 # config ansible inventory:
 sudo echo "192.168.47.21
